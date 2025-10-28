@@ -12,7 +12,6 @@ export function activate(context: vscode.ExtensionContext) {
     let text = document.getText();
 
     const renameDictionary: Map<string, string> = new Map();
-    const renamedItems: string[] = [];
 
     // Нормализация пробелов в if, struct, class
     text = text.replace(/if\s*\(/g, 'if (');
@@ -65,12 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
           const formatted = parts
             .map((p: string) => p.trim())
             .filter((p: string) => p.length > 0)
-            .map((p: string, index: number) => {
-              if (p === '||' || p === '&&') {
-                return `    ${p}`;
-              }
-              return index === 0 ? `    ${p}` : `    ${p}`;
-            })
+            .map((p: string) => `    ${p}`)
             .join('\n');
           return `if (\n${formatted}\n) {`;
         }
@@ -143,7 +137,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const funcRegex = /(\w[\w\s\*\&]+)\s+([a-zA-Z]\w*)\s*\(([^)]*)\)\s*\{/g;
 
 	text = text.replace(funcRegex, (match, ret, name, params) => {
-		if (name === 'main' || name === 'if') {
+		if (name === 'main') {
 			return match;
 		}
 
@@ -155,7 +149,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 		if (camel !== name) {
 			renameDictionary.set(name, camel);
-			renamedItems.push(`${name} → ${camel}`);
 		}
 
 		return `${ret.trim()} ${camel}(${params.trim()}) {`;
@@ -173,7 +166,6 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (camel !== name) {
           renameDictionary.set(name, camel);
-          renamedItems.push(`${name} → ${camel}`);
         }
 
         return `struct ${camel}`;
@@ -191,7 +183,6 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (camel !== name) {
           renameDictionary.set(name, camel);
-          renamedItems.push(`${name} → ${camel}`);
         }
 
         return `class ${camel}`;
@@ -211,7 +202,6 @@ export function activate(context: vscode.ExtensionContext) {
         
         if (upperSnake !== name) {
           renameDictionary.set(name, upperSnake);
-          renamedItems.push(`${name} → ${upperSnake}`);
         }
         
         return `#define ${upperSnake}`;
@@ -235,7 +225,6 @@ export function activate(context: vscode.ExtensionContext) {
         
         if (kCamelCase !== name) {
           renameDictionary.set(name, kCamelCase);
-          renamedItems.push(`${name} → ${kCamelCase}`);
         }
         
         return `${prefix}${kCamelCase}`;
@@ -258,7 +247,6 @@ export function activate(context: vscode.ExtensionContext) {
         
         if (kCamelCase !== name) {
           renameDictionary.set(name, kCamelCase);
-          renamedItems.push(`${name} → ${kCamelCase}`);
         }
         
         return `${prefix}${kCamelCase}`;
@@ -277,7 +265,6 @@ export function activate(context: vscode.ExtensionContext) {
         
         if (camelCase !== name) {
           renameDictionary.set(name, camelCase);
-          renamedItems.push(`${name} → ${camelCase}`);
         }
         
         return `${prefix}${camelCase}`;
