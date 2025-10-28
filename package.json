@@ -2,7 +2,7 @@
   "name": "cpp-codestyle-for-itmo",
   "displayName": "C++ Code Style for ITMO",
   "description": "A Visual Studio Code extension for enforcing C++ code style guidelines.",
-  "version": "0.0.1",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.103.0"
   },
