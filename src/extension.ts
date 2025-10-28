@@ -80,27 +80,6 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Преобразование однострочных if в многострочный формат
     text = text.replace(
-      /if\s*\(([^)]+)\)\s*continue\s*;/g,
-      (match, cond) => {
-        return `if (${cond}) {\n    continue;\n}`;
-      }
-    );
-
-    text = text.replace(
-      /if\s*\(([^)]+)\)\s*\{\s*continue\s*;\s*\}/g,
-      (match, cond) => {
-        return `if (${cond}) {\n    continue;\n}`;
-      }
-    );
-
-    text = text.replace(
-      /if\s*\(([^)]+)\)\s*\n\s*continue\s*;/gm,
-      (match, cond) => {
-        return `if (${cond}) {\n    continue;\n}`;
-      }
-    );
-
-    text = text.replace(
       /if\s*\(([^)]+)\)\s*([^{][^;]*);/g,
       (match, cond, statement) => {
         if (match.includes('{')) {
