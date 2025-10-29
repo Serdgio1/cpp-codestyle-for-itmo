@@ -19,7 +19,15 @@ export function activate(context: vscode.ExtensionContext) {
     text = text.replace(/if\s*\(\s*\)\s*\{/g, 'if () {');
     text = text.replace(/struct\s*\{/g, 'struct {');
     text = text.replace(/class\s*\{/g, 'class {');
-    
+
+    // Пробел перед фигурной скобкой в объявлениях struct/class
+    text = text.replace(/(class\s+[A-Za-z_]\w*)\s*\{/g, '$1 {');
+    text = text.replace(/(struct\s+[A-Za-z_]\w*)\s*\{/g, '$1 {');
+
+    // Пробелы вокруг одиночного '=' (не затрагивать ==, <=, >=, !=, += и т.п.)
+    text = text.replace(/(?<![!<>=+\-*/%&|^])\s*=\s*(?![=+\-*/%&|^>])/g, ' = ');
+
+
     // Форматирование if/else блоков
     text = text.replace(
       /if\s*\(([^)]+)\)\s*\{\s*([^}]+)\s*\}/g,
@@ -51,6 +59,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
     );
 
+
     // Разбиение длинных условий на несколько строк
     text = text.replace(
       /if\s*\(([^)]+)\)\s*\{/g,
@@ -59,18 +68,32 @@ export function activate(context: vscode.ExtensionContext) {
 		if (trimmedInner.length <= 80) {
 			return match; 
 		}
-        if (inner.includes('||') || inner.includes('&&')) {
-          const parts = inner.split(/(\|\||&&)/);
-          const formatted = parts
-            .map((p: string) => p.trim())
-            .filter((p: string) => p.length > 0)
-            .map((p: string) => `    ${p}`)
-            .join('\n');
-          return `if (\n${formatted}\n) {`;
-        }
+    if (inner.includes('||') || inner.includes('&&')) {
+      const parts = inner.split(/(\|\||&&)/);
+      const formatted = parts
+        .map((p: string) => p.trim())
+        .filter((p: string) => p.length > 0)
+        .reduce((acc: string[], p: string) => {
+          if (p === '||' || p === '&&') {
+            // Оператор добавляем в конец предыдущей строки
+            if (acc.length > 0) {
+              acc[acc.length - 1] += ` ${p}`;
+            } else {
+              acc.push(`    ${p}`);
+            }
+          } else {
+            // Операнд на новой строке с отступом
+            acc.push(`    ${p}`);
+          }
+          return acc;
+        }, [])
+        .join('\n');
+      return `if (\n${formatted}\n) {`;
+    }
         return match;
       }
     );
+
 
     // Преобразование однострочных if в многострочный формат
     text = text.replace(
@@ -133,7 +156,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
     );
 
-    // Именование функций: UpperCamelCase (кроме main)
+    // Именование функций: UpperCamelCase 
 	const funcRegex = /(\w[\w\s\*\&]+)\s+([a-zA-Z]\w*)\s*\(([^)]*)\)\s*\{/g;
 
 	text = text.replace(funcRegex, (match, ret, name, params) => {
@@ -190,7 +213,6 @@ export function activate(context: vscode.ExtensionContext) {
     );
 
     // Именование констант
-    
     // Макросы: UPPER_SNAKE_CASE
     text = text.replace(
       /#define\s+([a-z][a-zA-Z0-9_]*)/g,
@@ -280,7 +302,7 @@ export function activate(context: vscode.ExtensionContext) {
     // Обрезка длинных строк
     const lines = text.split(/\r?\n/).map((line) => {
       if (line.length > 120) {
-        return line.slice(0, 120) + ' // ← обрезано';
+        return line.slice(0, 120);
       }
       return line;
     });
